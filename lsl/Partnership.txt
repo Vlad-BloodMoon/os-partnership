@@ -1,0 +1,14 @@
+CERTIFICATE OF PARTNERSHIP
+===================
+On %d at %t, in the region "%r", being part of grid "%g" (%n)
+
+%a [%ua]
+    formed a Partnership with:
+%b [%ub]
+
+
+
+--------------------------
+NOTES:
+Your profile has been updated to reflect the partnership.
+If your profile doesn't show your partner, update your profile picture to force a refresh (a good time for some wedding snaps!)

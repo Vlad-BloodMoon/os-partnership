@@ -1,0 +1,326 @@
+//YEngine:
+yoptions;
+
+constant source_version = "1.0.6";
+
+constant __DEBUG__ = FALSE;
+constant secret = "0TN@Z6E7**1)U'?MH81:[)z|;nj#3N&Ayb@Ql~.4XE+eR$)Dbg-}Omp_f*2iem=";
+constant URL = "https://your_url/";
+constant URI = "partnership.php";
+constant certificate = "Certificate of Partnership";
+
+constant RES_RESULT = 0;
+constant RES_USER1  = 1;
+constant RES_USER2  = 2;
+
+constant PARTY_POPPERS = -10000;
+
+list weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+list uuids;
+
+key user1 = NULL_KEY;
+key user2 = NULL_KEY;
+
+integer lhandle;
+integer busy;
+
+key rqInfo;
+key rqDiv;
+key rqPair;
+
+string base_cert;
+
+debug( string text ){
+    if( __DEBUG__ ){
+        llOwnerSay( text );
+    }
+}
+
+string Unix2PSTorPDT(integer insecs){
+    string str = ConvertPST(insecs - (3600 * 8) );   // PST is 8 hours behind GMT
+    if(llGetSubString(str, -3, -1) == "PDT")
+        str = ConvertPST(insecs - (3600 * 7) );      // ... Recompute at 1 hour later
+    return str;
+}
+// This leap year test is correct for all years from 1901 to 2099 and hence is quite adequate for Unix Time computations
+integer LeapYear(integer year){
+    return !(year & 3);
+}
+
+integer DaysPerMonth(integer year, integer month){
+    if (month == 2)      return 28 + LeapYear(year);
+    return 30 + ( (month + (month > 7) ) & 1);           // Odd months up to July, and even months after July, have 31 days
+}
+
+list preConvert( integer insecs ){
+    // this part of the calculation is common to both GMT/BST and PST/PDT
+    integer w; integer month; integer daysinyear;
+    integer mins = insecs / 60;
+    integer secs = insecs % 60;
+    integer hours = mins / 60;
+    mins = mins % 60;
+    integer days = hours / 24;
+    hours = hours % 24;
+    integer DayOfWeek = (days + 4) % 7;    // 0=Sun thru 6=Sat
+
+    integer years = 1970 +  4 * (days / 1461);
+    days = days % 1461;                  // number of days into a 4-year cycle
+
+    @loop;
+    daysinyear = 365 + LeapYear(years);
+    if (days >= daysinyear){
+        days -= daysinyear;
+        ++years;
+        jump loop;
+    }
+    ++days;
+
+    for (w = month = 0; days > w; ){
+        days -= w;
+        w = DaysPerMonth(years, ++month);
+    }
+
+    string str = ((string) years + "-" +
+                    llGetSubString ("0" + (string) month, -2, -1) +
+                    "-" + llGetSubString ("0" + (string) days, -2, -1) +
+                    " " +
+                    llGetSubString ("0" + (string) hours, -2, -1) +
+                     ":" +
+                     llGetSubString ("0" + (string) mins, -2, -1) );
+
+    return [days, DayOfWeek, month, years, str];
+}
+
+string ConvertPST(integer insecs){
+    list r = preConvert( insecs );
+    integer days = llList2Integer( r, 0 );
+    integer DayOfWeek = llList2Integer( r, 1 );
+    integer month = llList2Integer( r, 2 );
+    integer years = llList2Integer( r, 3 );
+    string str = llList2String( r, 4 );
+
+    integer LastSunday = days - DayOfWeek;
+    string PST_PDT = " PST";                  // start by assuming Pacific Standard Time
+    // Up to 2006, PDT is from the first Sunday in April to the last Sunday in October
+    // After 2006, PDT is from the 2nd Sunday in March to the first Sunday in November
+    if (years > 2006 && month == 3  && LastSunday >  7)     PST_PDT = " PDT";
+    if (month > 3)                                          PST_PDT = " PDT";
+    if (month > 10)                                         PST_PDT = " PST";
+    if (years < 2007 && month == 10 && LastSunday > 24)     PST_PDT = " PST";
+    return (llList2String(weekdays, DayOfWeek) + " " + str + PST_PDT);
+}
+
+
+integer random(){
+    return 0x80000000 | (integer)llFrand(65536) | ((integer)llFrand(65536) << 16);
+}
+
+endListen(){
+    if( lhandle != 0 ){
+        llListenRemove( lhandle );
+        lhandle = 0;
+    }
+    llSetTimerEvent(0.0);
+}
+
+integer startListen( key avatar ){
+    endListen();
+    integer chan = random();
+    lhandle = llListen( chan, "", avatar, "" );
+    llSetTimerEvent(120.0);
+    return chan;
+}
+
+menuDeclareWho( key user1, integer num ){
+    busy = TRUE;
+    integer chan = startListen( user1 );
+    list buttons = make_ordered_buttons( num );
+    string dText = "Choose your partner:";
+    for( integer i = 0; i < num; i++ ){
+        dText += "\n"+(string)(i+1)+" - "+llKey2Name( llList2Key( uuids, i ) );
+    }
+    llDialog( user1, dText, buttons, chan );
+}
+
+menuPartner( key user1, key user2 ){
+    integer chan = startListen( user2 );
+    list buttons = ["Accept", "Decline"];
+    string dText = "Partnership Proposal\n"+llKey2Name( user1 )+" wishes to partner with you";
+    llDialog( user2, dText, buttons, chan );
+}
+
+menuDivorce( key user1, key user2 ){
+    string name = llKey2Name( user2 );
+    integer chan = startListen( user1 );
+    llDialog( user1, "Are you sure you wish to dissolve your partnersip with:\n"+name, ["Dissolve", "Exit"], chan );
+}
+
+disclosure( key avatar, key partner ){
+    list date_time = llParseStringKeepNulls( Unix2PSTorPDT( llGetUnixTime() ), [" "], [] );
+    string date = llList2String( date_time, 0 )+" "+llList2String( date_time, 1 );
+    string time = llList2String( date_time, 2 )+" "+llList2String( date_time, 3 );
+    string contents = base_cert;
+    if( contents == "" ){
+        base_cert = osGetNotecard( "Partnership.txt" );
+        contents = base_cert;
+    }
+    contents = llReplaceSubString( contents, "%a", llKey2Name( avatar ), 0 );
+    contents = llReplaceSubString( contents, "%b", llKey2Name( partner ), 0 );
+    contents = llReplaceSubString( contents, "%r", llGetRegionName(), 0 );
+    contents = llReplaceSubString( contents, "%g", osGetGridName(), 0 );
+    contents = llReplaceSubString( contents, "%n", osGetGridNick(), 0 );
+    contents = llReplaceSubString( contents, "%d", date, 0 );
+    contents = llReplaceSubString( contents, "%t", time, 0 );
+    contents = llReplaceSubString( contents, "%ua", avatar, 0 );
+    contents = llReplaceSubString( contents, "%ub", partner, 0 );
+    osMakeNotecard( certificate, [contents] );
+    llGiveInventory( avatar, certificate );
+    llGiveInventory( partner, certificate );
+    llRemoveInventory( certificate );
+}
+
+key sendMessage( string action, key user1, key user2 ){
+    string ext = "?pw="+llEscapeURL( secret )+"&action="+action+
+                    "&user1="+user1+
+                    "&user2="+user2;
+    return llHTTPRequest(URL+URI+ext, [], "");
+}
+
+list make_ordered_buttons(integer input){
+    string output;
+    if      (input == 9)  output = "7, 8, 9, 4, 5, 6, 1, 2, 3, Exit";
+    else if (input == 8)  output = "7, 8, -, 4, 5, 6, 1, 2, 3, Exit";
+    else if (input == 7)  output = "7, -, -, 4, 5, 6, 1, 2, 3, Exit";
+    else if (input == 6)  output = "4, 5, 6, 1, 2, 3, Exit";
+    else if (input == 5)  output = "4, 5, -, 1, 2, 3, Exit";
+    else if (input == 4)  output = "4, -, -, 1, 2, 3, Exit";
+    else if (input == 3)  output = "1, 2, 3, Exit";
+    else if (input == 2)  output = "Exit, 1, 2";
+    else if (input == 1)  output = "Exit, 1";
+    if (output == "") return [];
+    return llCSV2List(output);
+}
+
+default {
+    state_entry() {
+        llSetText("Marriage, Partnership and Separation", <1, 0.685, 0>, 1.0 );
+        debug( Unix2PSTorPDT( llGetUnixTime() ) );
+    }
+    touch_start(integer num){
+        if( !lhandle && !busy ){
+            rqInfo = sendMessage( "info", llDetectedKey(0), NULL_KEY );
+        }
+        else {
+            llSay( 0, "Busy" );
+        }
+    }
+    timer(){
+        endListen();
+        busy = FALSE; // end busy status on timeout
+    }
+    http_response( key id, integer status, list metadata, string body ){
+        debug("["+(string)status+"] "+body);
+        list data = llParseStringKeepNulls( body, ["|"], [] );
+        integer result = (integer) llList2String( data, RES_RESULT );
+        key user1 = (key) llList2String( data, RES_USER1 );
+        key user2 = (key) llList2String( data, RES_USER2 );
+
+        if( id == rqInfo ){
+            if( user2 == NULL_KEY ){
+                // partnership required
+                list avatars = osGetAvatarList();
+                // owner is excluded so add owner if in region and not user1
+                if( llGetAgentSize( llGetOwner() ) != ZERO_VECTOR && llGetOwner() != user1 ){
+                    vector pos = llList2Vector( llGetObjectDetails( llGetOwner(), [OBJECT_POS] ), 0 );
+                    avatars += [ llGetOwner(), pos, llKey2Name( llGetOwner() ) ];
+                }
+                // remove user1 from list if they're in it (not owner of task)
+                integer n = llListFindList( avatars, [user1] );
+                if( n > -1 ){
+                    avatars = llListReplaceList( avatars, [], n, n+2 );
+                }
+
+                // convert position of avatars to distance from task
+                vector pos = llGetPos();
+                n = llGetListLength( avatars );
+                for( integer i = 0; i < n; i+= 3 ){
+                    float dist = llVecDist( pos, llList2Vector( avatars, i+1 ) );
+                    avatars = llListReplaceList( avatars, [dist], i+1, i+1 );
+                }
+                // sort list, based on distance
+                osListSortInPlaceStrided( avatars, 3, 1, 1 );
+                if( n > 9*3 ){
+                    avatars = llList2List( avatars, 0, (9*3)-1 );
+                }
+
+                // extract just the uuids of the avatars
+                n = llGetListLength( avatars );
+                uuids = [];
+                for( integer i = 0; i < n; i += 3 ){
+                    uuids += llList2Key( avatars, i );
+                }
+                // prompt for v̶i̶c̶t̶i̶m̶ partner
+                menuDeclareWho( user1, llGetListLength( uuids ) );
+            }
+            else {
+                menuDivorce( user1, user2 );
+            }
+        }
+        else if( id == rqPair ){
+            busy = FALSE;
+            if( result == 2 ){
+                // paired!
+                // fire some party poppers, if another script provides them
+                llMessageLinked( LINK_SET, PARTY_POPPERS, "", "" );
+                llShout( PUBLIC_CHANNEL, "CONGRATULATIONS!" );
+                llShout( PUBLIC_CHANNEL, llKey2Name( user1 )+" has partnered with "+llKey2Name( user2 ) );
+                disclosure( user1, user2 );
+            }
+            else {
+                key thirdParty = (key) llList2String( data, RES_USER2 + 1 );
+                llRegionSayTo( user1, PUBLIC_CHANNEL,
+                    llKey2Name( user2 )+" is already partnered with "+llKey2Name( thirdParty ) );
+                llRegionSayTo( user2, PUBLIC_CHANNEL,
+                    "You must first dissolve your partnership with "+llKey2Name( thirdParty ) );
+            }
+        }
+        else if( id == rqDiv ){
+            if( result == 2 ){
+                llDialog( user1, "You have disolved your partnership with\n"+llKey2Name( user2 ),
+                        ["Exit"], random() );
+                if( llGetAgentSize( user2 ) != ZERO_VECTOR ){
+                    llDialog( user2, llKey2Name( user1 )+" has disolved your partnership",
+                        ["Exit"], random() );
+                }
+                else {
+                    llInstantMessage( user2, llKey2Name( user1 )+" has disolved your partnership" );
+                }
+            }
+            else {
+                llRegionSayTo( user1, PUBLIC_CHANNEL, "An error occurred, the partnership was not disolved" );
+            }
+        }
+    }
+    listen(integer channel, string name, key id, string msg){
+        endListen();
+        if( msg == "Dissolve" ){
+            rqDiv = sendMessage( "divorce", id, NULL_KEY );
+        }
+        else if( msg == "Accept" ){
+            rqPair = sendMessage( "partner", user1, id );
+        }
+        else if( msg == "Decline" ){
+            busy = FALSE;
+            llRegionSayTo( user1, PUBLIC_CHANNEL, llKey2Name( id )+" declined your proposal" );
+        }
+        else if( msg != "Exit" ){
+            integer msgN = (integer) msg;
+            if( msgN > 0 && msgN < 10 ){
+                user1 = id;
+                user2 = llList2Key( uuids, msgN-1 );
+                menuPartner( user1, user2 );
+                llRegionSayTo( user1, PUBLIC_CHANNEL, llKey2Name( user2 )+" is being asked to accept your proposal" );
+            }
+        }
+    }
+}

@@ -57,7 +57,7 @@ If the chosen partner is already partnered, the agent is informed the partnershi
 
 ~~Once the agent has chosen a partner, the script goes into lockdown to prevent anyone else using it while the current partnering process is taking place. A partnering process takes priority over a dissolution.~~
 
-From version 1.0.7, the script can handle multiple requests by multiple avatars simultaneously.
+From version 1.0.7, the script can handle multiple requests by multiple avatars simultaneously. This actually simplifies the code while also making the code safe against inadvertent confusion between processes.
 
 ## Files not included
 [Back to Top](#os-partnership)

@@ -123,11 +123,11 @@ webspace root/
                 + sendMessage.php
 
 ```
-You can put this in a sub-folder of your web space, but make sure that the `lib` folder is a sub-folder of the folder that `partnership.php` is in, and that you set the `URL` correctly in the -in-world script.
+You can put this in a sub-folder of your web space, but make sure that the `lib` folder is a sub-folder of the folder that `partnership.php` is in, and that you set the `URL` correctly in the in-world script.
 
 In-world:
 1. Create a prim or link-set
-2. In its inventory, add the notecard `Partnership.txt`
+2. In its inventory, add the notecard `Partnership.txt` (the case of the name is important!)
 3. In its inventory, create a new script, empty it and copy the contents of `partnership.ossl` into it
 4. Edit the script and:
    - set the `secret` to match the `secret` you set in `partnership.php`
@@ -200,7 +200,7 @@ All the potential parameters are forwarded by the proxy script, and whatever res
 The in-world script assumes you will be using the `YEngine` scripting engine on your simulator, and uses certain scripting features available only to that engine. If you are using `XEngine`, you will need to make a few minor changes to the in-world script, in addition to the edits mentioned in the [Setting Up](#setting-up) section.
 
 Edit the in-world script:
-1. Change the first line from `//YEngine:` to `XEngine:`
+1. Change the first line from `//YEngine:` to `//XEngine:`
 2. Comment out the line `yoptions;`
 3. Change the word `constant` to `string` for the following `constants`:
    - source_version

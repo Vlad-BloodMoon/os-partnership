@@ -52,5 +52,5 @@ else if( $p->action == "partner" ){
         $result += $db->affected_rows();
     }
 }
-echo "$result|$user1|$user2$extra";
+echo "$result|$p->action|$user1|$user2$extra";
 ?>

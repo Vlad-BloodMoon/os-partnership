@@ -1,6 +1,8 @@
 # os-partnership
 Make or Break Partnerships in Opensimulator
 
+**Version**: 1.0.7
+
 This repository consists of the in-world LSL/OSSL script required to initiate partnership management as well as a PHP script to interrogate and modify partnership details on user account profile records. There are a number of simple libraries accompanying the PHP script, which I culled from my own set of libraries - why invent a new wheel when the old one still works?
 
 **WARNING**: Requires backend access to the grid database!
@@ -53,7 +55,9 @@ B. For an unpartnered agent:
 
 If the chosen partner is already partnered, the agent is informed the partnership failed (and why). The avatar is informed they must first dissolve their existing partnership.
 
-Once the agent has chosen a partner, the script goes into lockdown to prevent anyone else using it while the current partnering process is taking place. A partnering process takes priority over a dissolution.
+~~Once the agent has chosen a partner, the script goes into lockdown to prevent anyone else using it while the current partnering process is taking place. A partnering process takes priority over a dissolution.~~
+
+From version 1.0.7, the script can handle multiple requests by multiple avatars simultaneously.
 
 ## Files not included
 [Back to Top](#os-partnership)
@@ -166,9 +170,10 @@ result = "count|uuid1|uuid2";
 
 In some cases, there may be an extra piece of information tacked onto the end:
 ```lsl2
-result = "count|uuid1|uuid2|uuid3";
+result = "count|action|uuid1|uuid2|uuid3";
 ```
 
+- action is the action requested
 - uuid1 equates to the agent initiating the task
 - uuid2 equates to the target avatar
 - uuid3 equates to uuid2's partner if they already have one

@@ -1,17 +1,18 @@
 //YEngine:
 yoptions;
 
-constant source_version = "1.0.6";
+constant source_version = "1.0.7";
 
-constant __DEBUG__ = FALSE;
-constant secret = "0TN@Z6E7**1)U'?MH81:[)z|;nj#3N&Ayb@Ql~.4XE+eR$)Dbg-}Omp_f*2iem=";
-constant URL = "https://your_url/";
+constant __DEBUG__ = TRUE;
+constant secret = "n068eY,!ULCaqhn-TbOQ-Fu,rMhdj:HZfs[JtkYxx@FA{MDFE6x/>Wt0?Xq)h6R";
+constant URL = "https://mossgrid.uk/jrest/";
 constant URI = "partnership.php";
 constant certificate = "Certificate of Partnership";
 
 constant RES_RESULT = 0;
-constant RES_USER1  = 1;
-constant RES_USER2  = 2;
+constant RES_ACTION = 1;
+constant RES_USER1  = 2;
+constant RES_USER2  = 3;
 
 constant PARTY_POPPERS = -10000;
 
@@ -27,6 +28,8 @@ integer busy;
 key rqInfo;
 key rqDiv;
 key rqPair;
+
+list handles;
 
 string base_cert;
 
@@ -115,18 +118,27 @@ integer random(){
     return 0x80000000 | (integer)llFrand(65536) | ((integer)llFrand(65536) << 16);
 }
 
-endListen(){
-    if( lhandle != 0 ){
-        llListenRemove( lhandle );
-        lhandle = 0;
+endListen( key avatar ){
+    if( llGetListLength( handles ) > 0 ){
+        integer i = 0;
+        if( avatar != NULL_KEY ){
+            i = llListFindList( handles, [avatar] );
+        }
+        if( i > -1 ){
+            llListenRemove( llList2Integer( handles, i+1 ) );
+            handles = llListReplaceList( handles, [], i, i+1 );
+        }
     }
-    llSetTimerEvent(0.0);
+    if( handles == [] ){
+        llSetTimerEvent(0.0);
+    }
 }
 
 integer startListen( key avatar ){
-    endListen();
+    endListen( avatar );
     integer chan = random();
-    lhandle = llListen( chan, "", avatar, "" );
+    integer lhandle = llListen( chan, "", avatar, "" );
+    handles += [avatar, lhandle];
     llSetTimerEvent(120.0);
     return chan;
 }
@@ -215,17 +227,18 @@ default {
         }
     }
     timer(){
-        endListen();
+        endListen( NULL_KEY );
         busy = FALSE; // end busy status on timeout
     }
     http_response( key id, integer status, list metadata, string body ){
-        debug("["+(string)status+"] "+body);
+        debug("["+status+"] "+body);
         list data = llParseStringKeepNulls( body, ["|"], [] );
         integer result = (integer) llList2String( data, RES_RESULT );
+        string action = llList2String( data, RES_ACTION );
         key user1 = (key) llList2String( data, RES_USER1 );
         key user2 = (key) llList2String( data, RES_USER2 );
 
-        if( id == rqInfo ){
+        if( action == "info" ){
             if( user2 == NULL_KEY ){
                 // partnership required
                 list avatars = osGetAvatarList();
@@ -266,7 +279,7 @@ default {
                 menuDivorce( user1, user2 );
             }
         }
-        else if( id == rqPair ){
+        else if( action == "partner" ){
             busy = FALSE;
             if( result == 2 ){
                 // paired!
@@ -284,7 +297,7 @@ default {
                     "You must first dissolve your partnership with "+llKey2Name( thirdParty ) );
             }
         }
-        else if( id == rqDiv ){
+        else if( action == "divorce" ){
             if( result == 2 ){
                 llDialog( user1, "You have disolved your partnership with\n"+llKey2Name( user2 ),
                         ["Exit"], random() );
@@ -302,7 +315,7 @@ default {
         }
     }
     listen(integer channel, string name, key id, string msg){
-        endListen();
+        endListen( id );
         if( msg == "Dissolve" ){
             rqDiv = sendMessage( "divorce", id, NULL_KEY );
         }

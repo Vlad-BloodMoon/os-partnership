@@ -5,14 +5,18 @@ This repository consists of the in-world LSL/OSSL script required to initiate pa
 
 **WARNING**: Requires backend access to the grid database!
 
+I have named the in-world script with an `ossl` extension rather than an `lsl` extension, because it contains `OSSL` extension functions.
+
 # Index
 - [OSSL Functions](#ossl-functions)
 - [General Process](#general-process)
-- [Files Not Include](#files-not-included)
+- [Files Not Included](#files-not-included)
 - [The Certificate](#the-certificate)
 - [The Secret](#the-secret)
+- [Setting Up](#setting-up)
 - [Debugging](#debugging)
 - [Using the Proxy Script](#using-the-proxy-script)
+- [Using XEngine](#using-xengine)
 
 
 ## OSSL Functions
@@ -100,6 +104,37 @@ There is a `secret` encoded in both the LSL/OSSL script and the receiving PHP sc
 
 Nobody else should know your secret, so this should provide a good level of protection against tampering, especially if you use https.
 
+## Setting Up
+[Back to Top](#os-partnership)
+
+On the web server:
+1. On your web server, copy the files `partnership.php` and the entire `lib` folder to your web space.
+2. Edit `lib/db_params.php` and enter the appropriate credentials to access your grid's database
+3. Edit `partnership.php` and set the `secret` to something unique (leaving it unchanged is a security risk)
+
+Your webserver folder hierarchy should look as follows:
+```
+webspace root/
+            + partnership.php
+            + lib/
+                + db_mysql.php
+                + db_params.php
+                + params.php
+                + sendMessage.php
+
+```
+You can put this in a sub-folder of your web space, but make sure that the `lib` folder is a sub-folder of the folder that `partnership.php` is in, and that you set the `URL` correctly in the -in-world script.
+
+In-world:
+1. Create a prim or link-set
+2. In its inventory, add the notecard `Partnership.txt`
+3. In its inventory, create a new script, empty it and copy the contents of `partnership.ossl` into it
+4. Edit the script and:
+   - set the `secret` to match the `secret` you set in `partnership.php`
+   - set the constant `URL` to your website's address (change to http if not using https!)
+
+You should now be able to test. See notes on debugging below.
+
 ## Debugging
 [Back to Top](#os-partnership)
 
@@ -158,5 +193,26 @@ This acts as a pass-through, calling the script on your local network (you'll ne
 This is also helpful if you have HTTPS available on your remote website, but need to use HTTP to call your local script.
 
 All the potential parameters are forwarded by the proxy script, and whatever result is returned to it, it will return to your in-world script.
+
+## Using XEngine
+[Back to Top](#os-partnership)
+
+The in-world script assumes you will be using the `YEngine` scripting engine on your simulator, and uses certain scripting features available only to that engine. If you are using `XEngine`, you will need to make a few minor changes to the in-world script, in addition to the edits mentioned in the [Setting Up](#setting-up) section.
+
+Edit the in-world script:
+1. Change the first line from `//YEngine:` to `XEngine:`
+2. Comment out the line `yoptions;`
+3. Change the word `constant` to `string` for the following `constants`:
+   - source_version
+   - secret
+   - URL
+   - URI
+   - certificate
+4. Change word `constant` to `integer` for the following `constants`
+   - \_\_DEBUG\_\_
+   - RES_RESULT
+   - RES_USER1
+   - RES_USER2
+   - PARTY_POPPERS
 
 [Back to Top](#os-partnership)

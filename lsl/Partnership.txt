@@ -2,9 +2,9 @@ CERTIFICATE OF PARTNERSHIP
 ===================
 On %d at %t, in the region "%r", being part of grid "%g" (%n)
 
-%a [%ua]
+[%ua] %a
     formed a Partnership with:
-%b [%ub]
+[%ub] %b
 
 
 

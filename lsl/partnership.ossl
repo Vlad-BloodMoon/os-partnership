@@ -1,13 +1,13 @@
 //YEngine:
 yoptions;
 
-constant source_version = "1.0.10";
-
 constant __DEBUG__ = FALSE;
 constant secret = "0TN@Z6E7**1)U'?MH81:[)z|;nj#3N&Ayb@Ql~.4XE+eR$)Dbg-}Omp_f*2iem=";
 constant URL = "https://mossgrid.uk/jrest/";
 constant URI = "partnership.php";
 constant certificate = "Certificate of Partnership";
+
+constant source_version = "1.0.11";
 
 constant RES_RESULT = 0;
 constant RES_ACTION = 1;

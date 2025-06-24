@@ -4,10 +4,7 @@ include_once("lib/db_mysql.php");
 include_once("lib/params.php");
 include_once("lib/db_params.php");
 
-define("SRC_VERSION", "1.0.10");
-
-define("ZERO_UUID", "00000000-0000-0000-0000-000000000000");
-define("TIMEZONE", "America/Los Angeles");
+define("SRC_VERSION", "1.0.11");
 
 $p = new parameters();
 

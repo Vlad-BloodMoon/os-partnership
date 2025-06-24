@@ -4,7 +4,7 @@ include_once("lib/db_mysql.php");
 include_once("lib/params.php");
 include_once("lib/db_params.php");
 
-define("SRC_VERSION", "1.0.8");
+define("SRC_VERSION", "1.0.10");
 
 define("SECRET", "0TN@Z6E7**1)U'?MH81:[)z|;nj#3N&Ayb@Ql~.4XE+eR$)Dbg-}Omp_f*2iem=" );
 define("ZERO_UUID", "00000000-0000-0000-0000-000000000000");
@@ -15,6 +15,22 @@ if( $p->pw != SECRET ){
     echo "0|Epic Failure|Very Epic Failure|Truly Epic Failure"; // status code and error message
     exit(0);
 }
+
+function updateNotes( $uuid, $data ){
+    global $db;
+    $note = "";
+
+    $r = $db->execute_as_obj( "select `notes` from usernotes where `useruuid`='$uuid' and `targetuuid`='$uuid'");
+    if( $r ){
+        $note = $r->notes."\n----------\n";
+    }
+
+    $note .= $data;
+    $sql = "insert into usernotes (`useruuid`, `targetuuid`, `notes`) values ('$uuid', '$uuid', '$note') on duplicate key update `notes`='$note'";
+    $db->execute( $sql );
+
+}
+
 $db = new DB_Sql();
 setDBParameters( $db ); // Host, Database, Username, Password
 
@@ -52,6 +68,20 @@ else if( $p->action == "partner" ){
         $result += $db->affected_rows();
         $db->execute( "update userprofile set profilePartner='$user1' where useruuid='$user2'" );
         $result += $db->affected_rows();
+
+        // get user names
+        $db->execute("select FirstName, LastName from UserAccounts where PrincipalID='$user1' or PrincipalID='$user2'");
+        $uname1 = $db->f("FirstName")." ".$db->f("LastName");
+        $db->next_record();
+        $uname2 = $db->f("FirstName")." ".$db->f("LastName");
+
+        $date = new DateTime();
+        $date->setTimezone(new DateTimeZone('America/Los_Angeles'));
+        $date = $date->format("Y-m-d H:i:s");
+        $note = "$date $uname1 Partnered with $uname2";
+        
+        updateNotes( $user1, $note );
+        updateNotes( $user2, $note );
     }
 }
 echo "$result|$p->action|$user1|$user2$extra";

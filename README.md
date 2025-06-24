@@ -52,6 +52,7 @@ B. For an unpartnered agent:
 - If accepted, perform partnering
 - If successfully partnered, shout a congratulatory message and fire a party-popper script
 - Both agent and avatar receive a certificate
+- The 'notes' section in their own profiles is updated to show when the partnership was formed
 
 If the chosen partner is already partnered, the agent is informed the partnership failed (and why). The avatar is informed they must first dissolve their existing partnership.
 

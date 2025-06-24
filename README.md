@@ -166,7 +166,7 @@ Debugging return values from the php script is as simple as adding a line straig
 
 Note the php script always returns a string in the format:
 ```lsl2
-result = "count|uuid1|uuid2";
+result = "count|action|uuid1|uuid2";
 ```
 
 In some cases, there may be an extra piece of information tacked onto the end:

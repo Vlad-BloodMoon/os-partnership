@@ -7,7 +7,7 @@ constant URL = "https://mossgrid.uk/jrest/";
 constant URI = "partnership.php";
 constant certificate = "Certificate of Partnership";
 
-constant source_version = "1.0.11";
+constant source_version = "1.0.12";
 
 constant RES_RESULT = 0;
 constant RES_ACTION = 1;
@@ -29,8 +29,6 @@ key rqDiv;
 key rqPair;
 
 list handles;
-
-string base_cert;
 
 debug( string text ){
     if( __DEBUG__ ){
@@ -170,11 +168,7 @@ disclosure( key avatar, key partner ){
     list date_time = llParseStringKeepNulls( Unix2PSTorPDT( llGetUnixTime() ), [" "], [] );
     string date = llList2String( date_time, 0 )+" "+llList2String( date_time, 1 );
     string time = llList2String( date_time, 2 )+" "+llList2String( date_time, 3 );
-    string contents = base_cert;
-    if( contents == "" ){
-        base_cert = osGetNotecard( "Partnership.txt" );
-        contents = base_cert;
-    }
+    string contents = osGetNotecard( "Partnership.txt" );
     contents = llReplaceSubString( contents, "%a", llKey2Name( avatar ), 0 );
     contents = llReplaceSubString( contents, "%b", llKey2Name( partner ), 0 );
     contents = llReplaceSubString( contents, "%r", llGetRegionName(), 0 );

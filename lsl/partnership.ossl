@@ -1,10 +1,10 @@
 //YEngine:
 yoptions;
 
-constant source_version = "1.0.7";
+constant source_version = "1.0.8";
 
-constant __DEBUG__ = FALSE;
-constant secret = "n068eY,!ULCaqhn-TbOQ-Fu,rMhdj:HZfs[JtkYxx@FA{MDFE6x/>Wt0?Xq)h6R";
+constant __DEBUG__ = TRUE;
+constant secret = "0TN@Z6E7**1)U'?MH81:[)z|;nj#3N&Ayb@Ql~.4XE+eR$)Dbg-}Omp_f*2iem=";
 constant URL = "https://mossgrid.uk/jrest/";
 constant URI = "partnership.php";
 constant certificate = "Certificate of Partnership";
@@ -219,12 +219,7 @@ default {
         debug( Unix2PSTorPDT( llGetUnixTime() ) );
     }
     touch_start(integer num){
-        if( !lhandle && !busy ){
-            rqInfo = sendMessage( "info", llDetectedKey(0), NULL_KEY );
-        }
-        else {
-            llSay( 0, "Busy" );
-        }
+        rqInfo = sendMessage( "info", llDetectedKey(0), NULL_KEY );
     }
     timer(){
         endListen( NULL_KEY );
@@ -261,7 +256,7 @@ default {
                     avatars = llListReplaceList( avatars, [dist], i+1, i+1 );
                 }
                 // sort list, based on distance
-                osListSortInPlaceStrided( avatars, 3, 1, 1 );
+                avatars = llListSortStrided( avatars, 3, 1, 1 );
                 if( n > 9*3 ){
                     avatars = llList2List( avatars, 0, (9*3)-1 );
                 }

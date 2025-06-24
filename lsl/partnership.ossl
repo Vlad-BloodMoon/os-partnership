@@ -1,7 +1,7 @@
 //YEngine:
 yoptions;
 
-constant source_version = "1.0.8";
+constant source_version = "1.0.10";
 
 constant __DEBUG__ = FALSE;
 constant secret = "0TN@Z6E7**1)U'?MH81:[)z|;nj#3N&Ayb@Ql~.4XE+eR$)Dbg-}Omp_f*2iem=";
@@ -17,7 +17,6 @@ constant RES_USER2  = 3;
 constant PARTY_POPPERS = -10000;
 
 list weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-list uuids;
 
 key user1 = NULL_KEY;
 key user2 = NULL_KEY;
@@ -35,7 +34,7 @@ string base_cert;
 
 debug( string text ){
     if( __DEBUG__ ){
-        llSay( 0, text );
+        llOwnerSay( text );
     }
 }
 
@@ -143,11 +142,11 @@ integer startListen( key avatar ){
     return chan;
 }
 
-menuDeclareWho( key user1, integer num ){
-    busy = TRUE;
+menuDeclareWho( key user1, integer num, list uuids ){
     integer chan = startListen( user1 );
     list buttons = make_ordered_buttons( num );
     string dText = "Choose your partner:";
+
     for( integer i = 0; i < num; i++ ){
         dText += "\n"+(string)(i+1)+" - "+llKey2Name( llList2Key( uuids, i ) );
     }
@@ -213,13 +212,22 @@ list make_ordered_buttons(integer input){
     return llCSV2List(output);
 }
 
+integer gridMember( string name ){
+    return osStringIndexOf( name, " @", TRUE ) == -1;
+}
+
 default {
     state_entry() {
         llSetText("Marriage, Partnership and Separation", <1, 0.685, 0>, 1.0 );
         debug( Unix2PSTorPDT( llGetUnixTime() ) );
     }
     touch_start(integer num){
-        rqInfo = sendMessage( "info", llDetectedKey(0), NULL_KEY );
+        if( !gridMember( llDetectedName(0) ) ){
+            llRegionSayTo( llDetectedKey(0), 0, "This can only be used by residents of this grid" );
+        }
+        else {
+            rqInfo = sendMessage( "info", llDetectedKey(0), NULL_KEY );
+        }
     }
     timer(){
         endListen( NULL_KEY );
@@ -261,14 +269,18 @@ default {
                     avatars = llList2List( avatars, 0, (9*3)-1 );
                 }
 
-                // extract just the uuids of the avatars
+                // extract just the uuids of the avatars, exclude hypergrid visitors
                 n = llGetListLength( avatars );
-                uuids = [];
+                list uuids = [];
                 for( integer i = 0; i < n; i += 3 ){
-                    uuids += llList2Key( avatars, i );
+                    key uid = llList2Key( avatars, i );
+                    if( gridMember( llKey2Name(uid) ) ){
+                        uuids += uid;
+                    }
                 }
                 // prompt for v̶i̶c̶t̶i̶m̶ partner
-                menuDeclareWho( user1, llGetListLength( uuids ) );
+                menuDeclareWho( user1, llGetListLength( uuids ), uuids );
+                llLinksetDataWrite( user1, llList2CSV( uuids ) );
             }
             else {
                 menuDivorce( user1, user2 );
@@ -324,6 +336,8 @@ default {
         else if( msg != "Exit" ){
             integer msgN = (integer) msg;
             if( msgN > 0 && msgN < 10 ){
+                list uuids = llCSV2List( llLinksetDataRead( id ) );
+                llLinksetDataDelete( id );
                 user1 = id;
                 user2 = llList2Key( uuids, msgN-1 );
                 menuPartner( user1, user2 );

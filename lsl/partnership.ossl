@@ -313,7 +313,7 @@ default {
                         ["Exit"], random() );
                 }
                 else {
-                    llInstantMessage( user2, llKey2Name( user1 )+" has disolved your partnership" );
+                    llInstantMessage( user2, llKey2Name( user1 )+" has dissolved your partnership" );
                 }
             }
             else {

@@ -115,7 +115,7 @@ Nobody else should know your secret, so this should provide a good level of prot
 On the web server:
 1. On your web server, copy the files `partnership.php` and the entire `lib` folder to your web space.
 2. Edit `lib/db_params.php` and enter the appropriate credentials to access your grid's database
-3. Edit `partnership.php` and set the `secret` to something unique (leaving it unchanged is a security risk)
+3. Edit `lib/db_params.php` and set the `secret` to something unique (leaving it unchanged is a security risk)
 
 Your webserver folder hierarchy should look as follows:
 ```

@@ -6,7 +6,6 @@ include_once("lib/db_params.php");
 
 define("SRC_VERSION", "1.0.10");
 
-define("SECRET", "0TN@Z6E7**1)U'?MH81:[)z|;nj#3N&Ayb@Ql~.4XE+eR$)Dbg-}Omp_f*2iem=" );
 define("ZERO_UUID", "00000000-0000-0000-0000-000000000000");
 define("TIMEZONE", "America/Los Angeles");
 

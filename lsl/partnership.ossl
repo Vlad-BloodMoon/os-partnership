@@ -145,7 +145,7 @@ integer startListen( key avatar ){
 menuDeclareWho( key user1, integer num, list uuids ){
     integer chan = startListen( user1 );
     list buttons = make_ordered_buttons( num );
-    string dText = "Choose your partner:";
+    string dText = "Choose your partner (HG visitors excluded):";
 
     for( integer i = 0; i < num; i++ ){
         dText += "\n"+(string)(i+1)+" - "+llKey2Name( llList2Key( uuids, i ) );

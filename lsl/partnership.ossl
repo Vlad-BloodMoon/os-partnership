@@ -3,7 +3,7 @@ yoptions;
 
 constant source_version = "1.0.8";
 
-constant __DEBUG__ = TRUE;
+constant __DEBUG__ = FALSE;
 constant secret = "0TN@Z6E7**1)U'?MH81:[)z|;nj#3N&Ayb@Ql~.4XE+eR$)Dbg-}Omp_f*2iem=";
 constant URL = "https://mossgrid.uk/jrest/";
 constant URI = "partnership.php";
@@ -35,7 +35,7 @@ string base_cert;
 
 debug( string text ){
     if( __DEBUG__ ){
-        llOwnerSay( text );
+        llSay( 0, text );
     }
 }
 

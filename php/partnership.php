@@ -8,6 +8,7 @@ define("SRC_VERSION", "1.0.10");
 
 define("SECRET", "0TN@Z6E7**1)U'?MH81:[)z|;nj#3N&Ayb@Ql~.4XE+eR$)Dbg-}Omp_f*2iem=" );
 define("ZERO_UUID", "00000000-0000-0000-0000-000000000000");
+define("TIMEZONE", "America/Los Angeles");
 
 $p = new parameters();
 
@@ -76,7 +77,7 @@ else if( $p->action == "partner" ){
         $uname2 = $db->f("FirstName")." ".$db->f("LastName");
 
         $date = new DateTime();
-        $date->setTimezone(new DateTimeZone('America/Los_Angeles'));
+        $date->setTimezone(new DateTimeZone(TIMEZONE));
         $date = $date->format("Y-m-d H:i:s");
         $note = "$date $uname1 Partnered with $uname2";
         

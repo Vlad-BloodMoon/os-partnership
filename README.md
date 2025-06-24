@@ -138,9 +138,9 @@ In-world:
    - set the `secret` to match the `secret` you set in `partnership.php`
    - set the constant `URL` to your website's address (change to http if not using https!)
 
-If your grid time is not PST/PDT, change this line in partnership.php:
+If your grid time is not PST/PDT, change this line in partnership.php - it's near the top:
 ```php
-$date->setTimezone(new DateTimeZone('America/Los_Angeles'));
+define("TIMEZONE", "America/Los Angeles");
 ```
 Change 'America/Los Angeles' to 'Europe/London' or whatever is appropriate. There is a list of supported timezone/city settings here: https://www.php.net/manual/en/timezones.php
 

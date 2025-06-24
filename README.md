@@ -2,8 +2,10 @@
 Make or Break Partnerships in Opensimulator
 
 **Version**:
+```
 LSL script: 1.0.12
 PHP script: 1.0.11
+```
 
 This repository consists of the in-world LSL/OSSL script required to initiate partnership management as well as a PHP script to interrogate and modify partnership details on user account profile records. There are a number of simple libraries accompanying the PHP script, which I culled from my own set of libraries - why invent a new wheel when the old one still works?
 

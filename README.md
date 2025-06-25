@@ -3,7 +3,7 @@ Make or Break Partnerships in Opensimulator
 
 **Version**:
 ```
-LSL script: 1.0.12
+LSL script: 1.0.13
 PHP script: 1.0.11
 ```
 

@@ -7,7 +7,7 @@ constant URL = "https://mossgrid.uk/jrest/";
 constant URI = "partnership.php";
 constant certificate = "Certificate of Partnership";
 
-constant source_version = "1.0.12";
+constant source_version = "1.0.13";
 
 constant RES_RESULT = 0;
 constant RES_ACTION = 1;
@@ -145,9 +145,15 @@ menuDeclareWho( key user1, integer num, list uuids ){
     list buttons = make_ordered_buttons( num );
     string dText = "Choose your partner (HG visitors excluded):";
 
-    for( integer i = 0; i < num; i++ ){
-        dText += "\n"+(string)(i+1)+" - "+llKey2Name( llList2Key( uuids, i ) );
+    if( num == 0 ){
+        dText = "There is nobody nearby to partner";
     }
+    else {
+        for( integer i = 0; i < num; i++ ){
+            dText += "\n"+(string)(i+1)+" - "+llKey2Name( llList2Key( uuids, i ) );
+        }
+    }
+
     llDialog( user1, dText, buttons, chan );
 }
 
@@ -321,7 +327,8 @@ default {
             rqDiv = sendMessage( "divorce", id, NULL_KEY );
         }
         else if( msg == "Accept" ){
-            rqPair = sendMessage( "partner", user1, id );
+            rqPair = sendMessage( "partner", llLinksetDataRead( id ), id );
+            llLinksetDataDelete( id );
         }
         else if( msg == "Decline" ){
             busy = FALSE;
@@ -332,8 +339,8 @@ default {
             if( msgN > 0 && msgN < 10 ){
                 list uuids = llCSV2List( llLinksetDataRead( id ) );
                 llLinksetDataDelete( id );
-                user1 = id;
                 user2 = llList2Key( uuids, msgN-1 );
+                llLinksetDataWrite( user2, id );
                 menuPartner( user1, user2 );
                 llRegionSayTo( user1, PUBLIC_CHANNEL, llKey2Name( user2 )+" is being asked to accept your proposal" );
             }

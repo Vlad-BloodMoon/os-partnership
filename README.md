@@ -3,8 +3,10 @@ Make or Break Partnerships in Opensimulator
 
 **Version**:
 ```
-LSL script: 1.0.13
+LSL script: 1.0.14
 PHP script: 1.0.11
+
+Minimum OpenSimulator version: 0.9.3
 ```
 
 This repository consists of the in-world LSL/OSSL script required to initiate partnership management as well as a PHP script to interrogate and modify partnership details on user account profile records. There are a number of simple libraries accompanying the PHP script, which I culled from my own set of libraries - why invent a new wheel when the old one still works?
@@ -14,6 +16,7 @@ This repository consists of the in-world LSL/OSSL script required to initiate pa
 I have named the in-world script with an `ossl` extension rather than an `lsl` extension, because it contains `OSSL` extension functions.
 
 # Index
+- [About](#about)
 - [OSSL Functions](#ossl-functions)
 - [General Process](#general-process)
 - [Files Not Included](#files-not-included)
@@ -24,6 +27,21 @@ I have named the in-world script with an `ossl` extension rather than an `lsl` e
 - [Using the Proxy Script](#using-the-proxy-script)
 - [Using XEngine](#using-xengine)
 
+## About
+[Back to Top](#os-partnership)
+These scripts were compiled rapidly over two days, and time was then spent enhancing both the code and the user experience, ironing out bugs along the way. I am aware of the [outworldz.com](https://outworldz.com/) scripts that perform a similar function, but did not look at them. I aimed to make the functionality as complete and extensive as I could while keeping the user interface as slick and simple as possible.
+
+As well as performing partnering and dissolution of partnerships, the system will provide partnership certificates to both parties using a simple, modifiable template - so you can change the layout, structure, contents and language as you prefer - which injects data by replacing specific tokens in the template. It will also add a partnership note to each avatar's own notes (open your own profile, navigate to the `Notes` tab), so you have a record of when the partnership occurred (and to whom) even if you accidentally delete the certificate.
+
+When a partnership is successfully formed, a `link message` is sent to the entire link set. If you have a script listening for that message, it can be used as a `party-popper` - displaying particle fireworks, playing fanfares and cheering sounds etc. - so you can personalise your 'wedding machine'.
+
+Once the server-side PHP scripts have been installed and configured, the in-world script (`partnership.ossl`) and template notecard (`Partnership.txt`) can be dropped in a prim - along with your party-popper script if you want one - and you are ready to go. The prim is yours, so pimp it up with textures, contort it, make it a sculpty or make it out of mesh, animate it or its textures. You can even place the scripts in an animesh character (need to right-click & touch to operate).
+
+The script works with multiple users in mind, so several pairs of avatars can use the machine at the same time without trampling on each other's data or listen handles.
+
+In order to pair, the proposing agent is offered a list of nearby avatars to make the proposal to. This list automatically excludes hypergrid visitors as partnerships can only be formed between two avatars whose accounts are on the same local grid.
+
+In use it is as simple as touching the prim, selecting a ~~victim~~ target avatar, then the target avatar accepting the proposal sent to them. Dissolving a partnership is even easier.
 
 ## OSSL Functions
 [Back to Top](#os-partnership)

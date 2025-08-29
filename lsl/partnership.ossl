@@ -3,8 +3,7 @@ yoptions;
 
 constant __DEBUG__ = FALSE;
 constant secret = "0TN@Z6E7**1)U'?MH81:[)z|;nj#3N&Ayb@Ql~.4XE+eR$)Dbg-}Omp_f*2iem=";
-constant URL = "https://mossgrid.uk/jrest/";
-constant URI = "partnership.php";
+constant chemin = "https://tarata.com/os-partnership/php/partnership.php";
 constant certificate = "Certificate of Partnership";
 
 constant source_version = "1.0.14";
@@ -18,9 +17,6 @@ constant PARTY_POPPERS = -10000;
 
 list weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-key user1 = NULL_KEY;
-key user2 = NULL_KEY;
-
 integer lhandle;
 integer busy;
 
@@ -31,9 +27,8 @@ key rqPair;
 list handles;
 
 debug( string text ){
-    if( __DEBUG__ ){
+    if( __DEBUG__ )
         llOwnerSay( text );
-    }
 }
 
 string Unix2PSTorPDT(integer insecs){
@@ -68,14 +63,16 @@ list preConvert( integer insecs ){
 
     @loop;
     daysinyear = 365 + LeapYear(years);
-    if (days >= daysinyear){
+    if (days >= daysinyear)
+    {
         days -= daysinyear;
         ++years;
         jump loop;
     }
     ++days;
 
-    for (w = month = 0; days > w; ){
+    for (w = month = 0; days > w; )
+    {
         days -= w;
         w = DaysPerMonth(years, ++month);
     }
@@ -140,8 +137,8 @@ integer startListen( key avatar ){
     return chan;
 }
 
-menuDeclareWho( key user1, integer num, list uuids ){
-    integer chan = startListen( user1 );
+menuDeclareWho( key demandeur, integer num, list uuids ){
+    integer chan = startListen( demandeur );
     list buttons = make_ordered_buttons( num );
     string dText = "Choose your partner (HG visitors excluded):";
 
@@ -149,25 +146,24 @@ menuDeclareWho( key user1, integer num, list uuids ){
         dText = "There is nobody nearby to partner";
     }
     else {
-        for( integer i = 0; i < num; i++ ){
+        for( integer i = 0; i < num; ++i ){
             dText += "\n"+(string)(i+1)+" - "+llKey2Name( llList2Key( uuids, i ) );
         }
     }
-
-    llDialog( user1, dText, buttons, chan );
+    llDialog( demandeur, dText, buttons, chan );
 }
 
-menuPartner( key user1, key user2 ){
+menuPartner( key demandeur, key user2 ){
     integer chan = startListen( user2 );
     list buttons = ["Accept", "Decline"];
-    string dText = "Partnership Proposal\n"+llKey2Name( user1 )+" wishes to partner with you";
+    string dText = "Partnership Proposal\n"+llKey2Name( demandeur )+" wishes to partner with you";
     llDialog( user2, dText, buttons, chan );
 }
 
-menuDivorce( key user1, key user2 ){
+menuDivorce( key demandeur, key user2 ){
     string name = llKey2Name( user2 );
-    integer chan = startListen( user1 );
-    llDialog( user1, "Are you sure you wish to dissolve your partnersip with:\n"+name, ["Dissolve", "Exit"], chan );
+    integer chan = startListen( demandeur );
+    llDialog( demandeur, "Are you sure you wish to dissolve your partnersip with:\n"+name, ["Dissolve", "Exit"], chan );
 }
 
 disclosure( key avatar, key partner ){
@@ -190,11 +186,14 @@ disclosure( key avatar, key partner ){
     llRemoveInventory( certificate );
 }
 
-key sendMessage( string action, key user1, key user2 ){
+key sendMessage( string action, key demandeur, key user2 ){
     string ext = "?pw="+llEscapeURL( secret )+"&action="+action+
-                    "&user1="+user1+
+                    "&user1="+demandeur+
                     "&user2="+user2;
-    return llHTTPRequest(URL+URI+ext, [], "");
+    debug (ext);
+        return llHTTPRequest(chemin+"/"+ext, [HTTP_METHOD, "GET", HTTP_MIMETYPE, "text/html", HTTP_VERIFY_CERT, FALSE], "");
+//    return llHTTPRequest(chemin+"/"+ext, [HTTP_METHOD, "POST", HTTP_MIMETYPE, "text/html"], "");
+//    return llHTTPRequest(URL+URI+ext, [], "");
 }
 
 list make_ordered_buttons(integer input){
@@ -217,17 +216,16 @@ integer gridMember( string name ){
 }
 
 default {
-    state_entry() {
+    state_entry()
+    {
         llSetText("Marriage, Partnership and Separation", <1, 0.685, 0>, 1.0 );
         debug( Unix2PSTorPDT( llGetUnixTime() ) );
     }
     touch_start(integer num){
-        if( !gridMember( llDetectedName(0) ) ){
+        if( !gridMember( llDetectedName(0) ) )
             llRegionSayTo( llDetectedKey(0), 0, "This can only be used by residents of this grid" );
-        }
-        else {
+        else
             rqInfo = sendMessage( "info", llDetectedKey(0), NULL_KEY );
-        }
     }
     timer(){
         endListen( NULL_KEY );
@@ -238,20 +236,20 @@ default {
         list data = llParseStringKeepNulls( body, ["|"], [] );
         integer result = (integer) llList2String( data, RES_RESULT );
         string action = llList2String( data, RES_ACTION );
-        key user1 = (key) llList2String( data, RES_USER1 );
+        key demandeur = (key) llList2String( data, RES_USER1 );
         key user2 = (key) llList2String( data, RES_USER2 );
 
         if( action == "info" ){
             if( user2 == NULL_KEY ){
                 // partnership required
                 list avatars = osGetAvatarList();
-                // owner is excluded so add owner if in region and not user1
-                if( llGetAgentSize( llGetOwner() ) != ZERO_VECTOR && llGetOwner() != user1 ){
+                // owner is excluded so add owner if in region and not demandeur
+                if( llGetAgentSize( llGetOwner() ) != ZERO_VECTOR && llGetOwner() != demandeur ){
                     vector pos = llList2Vector( llGetObjectDetails( llGetOwner(), [OBJECT_POS] ), 0 );
                     avatars += [ llGetOwner(), pos, llKey2Name( llGetOwner() ) ];
                 }
-                // remove user1 from list if they're in it (not owner of task)
-                integer n = llListFindList( avatars, [user1] );
+                // remove demandeur from list if they're in it (not owner of task)
+                integer n = llListFindList( avatars, [demandeur] );
                 if( n > -1 ){
                     avatars = llListReplaceList( avatars, [], n, n+2 );
                 }
@@ -274,17 +272,15 @@ default {
                 list uuids = [];
                 for( integer i = 0; i < n; i += 3 ){
                     key uid = llList2Key( avatars, i );
-                    if( gridMember( llKey2Name(uid) ) ){
+                    if( gridMember( llKey2Name(uid) ) )
                         uuids += uid;
-                    }
                 }
                 // prompt for v̶i̶c̶t̶i̶m̶ partner
-                menuDeclareWho( user1, llGetListLength( uuids ), uuids );
-                llLinksetDataWrite( user1, llList2CSV( uuids ) );
+                menuDeclareWho( demandeur, llGetListLength( uuids ), uuids );
+                llLinksetDataWrite( demandeur, llList2CSV( uuids ) );
             }
-            else {
-                menuDivorce( user1, user2 );
-            }
+            else
+                menuDivorce( demandeur, user2 );
         }
         else if( action == "partner" ){
             busy = FALSE;
@@ -293,12 +289,12 @@ default {
                 // fire some party poppers, if another script provides them
                 llMessageLinked( LINK_SET, PARTY_POPPERS, "", "" );
                 llShout( PUBLIC_CHANNEL, "CONGRATULATIONS!" );
-                llShout( PUBLIC_CHANNEL, llKey2Name( user1 )+" has partnered with "+llKey2Name( user2 ) );
-                disclosure( user1, user2 );
+                llShout( PUBLIC_CHANNEL, llKey2Name( demandeur )+" has partnered with "+llKey2Name( user2 ) );
+                disclosure( demandeur, user2 );
             }
             else {
                 key thirdParty = (key) llList2String( data, RES_USER2 + 1 );
-                llRegionSayTo( user1, PUBLIC_CHANNEL,
+                llRegionSayTo( demandeur, PUBLIC_CHANNEL,
                     llKey2Name( user2 )+" is already partnered with "+llKey2Name( thirdParty ) );
                 llRegionSayTo( user2, PUBLIC_CHANNEL,
                     "You must first dissolve your partnership with "+llKey2Name( thirdParty ) );
@@ -306,43 +302,44 @@ default {
         }
         else if( action == "divorce" ){
             if( result == 2 ){
-                llDialog( user1, "You have disolved your partnership with\n"+llKey2Name( user2 ),
+                llDialog( demandeur, "You have disolved your partnership with\n"+llKey2Name( user2 ),
                         ["Exit"], random() );
                 if( llGetAgentSize( user2 ) != ZERO_VECTOR ){
-                    llDialog( user2, llKey2Name( user1 )+" has disolved your partnership",
+                    llDialog( user2, llKey2Name( demandeur )+" has disolved your partnership",
                         ["Exit"], random() );
                 }
                 else {
-                    llInstantMessage( user2, llKey2Name( user1 )+" has dissolved your partnership" );
+                    llInstantMessage( user2, llKey2Name( demandeur )+" has dissolved your partnership" );
                 }
             }
             else {
-                llRegionSayTo( user1, PUBLIC_CHANNEL, "An error occurred, the partnership was not disolved" );
+                llRegionSayTo( demandeur, PUBLIC_CHANNEL, "An error occurred, the partnership was not disolved" );
             }
         }
     }
-    listen(integer channel, string name, key id, string msg){
-        endListen( id );
+    listen(integer channel, string name, key quicause, string msg){
+        endListen( quicause );
         if( msg == "Dissolve" ){
-            rqDiv = sendMessage( "divorce", id, NULL_KEY );
+            rqDiv = sendMessage( "divorce", quicause, NULL_KEY );
         }
         else if( msg == "Accept" ){
-            rqPair = sendMessage( "partner", llLinksetDataRead( id ), id );
-            llLinksetDataDelete( id );
+            rqPair = sendMessage( "partner", llLinksetDataRead( quicause ), quicause );
+            debug(llKey2Name(llLinksetDataRead( quicause )) + " épouserait " + llKey2Name(quicause));
+            llLinksetDataDelete( quicause );
         }
         else if( msg == "Decline" ){
             busy = FALSE;
-            llRegionSayTo( user1, PUBLIC_CHANNEL, llKey2Name( id )+" declined your proposal" );
+            llRegionSayTo( llLinksetDataRead( quicause ), PUBLIC_CHANNEL, llKey2Name( quicause )+" declined your proposal" );
         }
         else if( msg != "Exit" ){
             integer msgN = (integer) msg;
             if( msgN > 0 && msgN < 10 ){
-                list uuids = llCSV2List( llLinksetDataRead( id ) );
-                llLinksetDataDelete( id );
-                user2 = llList2Key( uuids, msgN-1 );
-                llLinksetDataWrite( user2, id );
-                menuPartner( user1, user2 );
-                llRegionSayTo( user1, PUBLIC_CHANNEL, llKey2Name( user2 )+" is being asked to accept your proposal" );
+                list uuids = llCSV2List( llLinksetDataRead( quicause ) );
+                llLinksetDataDelete( quicause );
+                key user2 = llList2Key( uuids, msgN-1 );
+                llLinksetDataWrite( user2, quicause );
+                menuPartner( quicause, user2 );
+                llRegionSayTo( quicause, PUBLIC_CHANNEL, llKey2Name( user2 )+" is being asked to accept your proposal" );
             }
         }
     }

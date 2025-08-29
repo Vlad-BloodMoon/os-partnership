@@ -5,6 +5,8 @@ include_once("lib/params.php");
 include_once("lib/db_params.php");
 
 define("SRC_VERSION", "1.0.11");
+define("ZERO_UUID", "00000000-0000-0000-0000-000000000000");
+define("TIMEZONE", "America/Los_Angeles");
 
 $p = new parameters();
 
